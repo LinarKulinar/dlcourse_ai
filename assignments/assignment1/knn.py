@@ -1,4 +1,5 @@
 import numpy as np
+import bottleneck as bn
 
 
 class KNN:
@@ -37,6 +38,30 @@ class KNN:
         else:
             return self.predict_labels_multiclass(dists)
 
+    def compute_distances_three_loops(self, X):
+        '''
+        Computes distance from every sample of X to every training sample
+        Uses simplest implementation with 2 Python loops
+
+        Arguments:
+        X, np array (num_test_samples, num_features) - samples to run
+        
+        Returns:
+        dists, np array (num_test_samples, nГидротэкс um_train_samples) - array
+           with distances between each test and each train sample
+        '''
+        num_train = self.train_X.shape[0]
+        num_test = X.shape[0]
+        num_vec = self.train_X[0].shape[0] #lenth vector of picture
+        dists = np.zeros((num_test, num_train), np.float32)
+        for i_test in range(num_test):
+            for i_train in range(num_train):
+                # TODO: Fill dists[i_test][i_train]
+                for ind in range(num_vec):
+                    dists[i_test][i_train]+=np.abs(self.train_X[i_train][ind]-X[i_test][ind])
+        return dists
+    
+    
     def compute_distances_two_loops(self, X):
         '''
         Computes distance from every sample of X to every training sample
@@ -46,16 +71,19 @@ class KNN:
         X, np array (num_test_samples, num_features) - samples to run
         
         Returns:
-        dists, np array (num_test_samples, num_train_samples) - array
+        dists, np array (num_test_samples, nГидротэкс um_train_samples) - array
            with distances between each test and each train sample
         '''
         num_train = self.train_X.shape[0]
         num_test = X.shape[0]
+        num_vec = self.train_X[0].shape[0] #lenth vector of picture
         dists = np.zeros((num_test, num_train), np.float32)
         for i_test in range(num_test):
             for i_train in range(num_train):
                 # TODO: Fill dists[i_test][i_train]
-                pass
+                dists[i_test][i_train]=np.sum(np.abs(self.train_X[i_train]-X[i_test]))
+        return dists
+            
 
     def compute_distances_one_loop(self, X):
         '''
@@ -75,7 +103,8 @@ class KNN:
         for i_test in range(num_test):
             # TODO: Fill the whole row of dists[i_test]
             # without additional loops
-            pass
+            dists[i_test]=np.sum(np.abs(X[i_test]-self.train_X),axis=1)
+        return dists
 
     def compute_distances_no_loops(self, X):
         '''
@@ -94,7 +123,16 @@ class KNN:
         # Using float32 to to save memory - the default is float64
         dists = np.zeros((num_test, num_train), np.float32)
         # TODO: Implement computing all distances with no loops!
-        pass
+
+        A = X # first matrix
+        B = self.train_X # second matrix
+        An = np.expand_dims(A, axis=2)
+        Bn = np.expand_dims(B.T, axis=0)
+        dists = An-Bn
+        dists = np.abs(dists)
+        dists = np.sum(dists, axis=1)
+
+        return dists
 
     def predict_labels_binary(self, dists):
         '''
@@ -108,12 +146,16 @@ class KNN:
         pred, np array of bool (num_test_samples) - binary predictions 
            for every test sample
         '''
+        print("   1")
         num_test = dists.shape[0]
         pred = np.zeros(num_test, np.bool)
+        print("   2")
         for i in range(num_test):
             # TODO: Implement choosing best class based on k
             # nearest training samples
-            pass
+            tmp = dists[i]
+            ind = bn.argpartition(tmp,self.k)[:self.k]
+            print(ind)
         return pred
 
     def predict_labels_multiclass(self, dists):
