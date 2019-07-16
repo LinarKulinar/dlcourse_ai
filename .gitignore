@@ -1,1 +1,11 @@
 .DS_Store
+
+.venv
+
+/assignments/assignment1/data/
+
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
+*.pyc
+*.pyo
