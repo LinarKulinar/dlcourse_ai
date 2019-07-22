@@ -146,16 +146,16 @@ class KNN:
         pred, np array of bool (num_test_samples) - binary predictions 
            for every test sample
         '''
-        print("   1")
         num_test = dists.shape[0]
         pred = np.zeros(num_test, np.bool)
-        print("   2")
         for i in range(num_test):
             # TODO: Implement choosing best class based on k
             # nearest training samples
             tmp = dists[i]
-            ind = bn.argpartition(tmp,self.k)[:self.k]
+            ind = bn.partition(tmp,self.k)[:self.k]
+
             print(ind)
+            return
         return pred
 
     def predict_labels_multiclass(self, dists):
