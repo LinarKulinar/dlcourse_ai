@@ -113,7 +113,7 @@ class KNN:
 
         Arguments:
         X, np array (num_test_samples, num_features) - samples to run
-        
+
         Returns:
         dists, np array (num_test_samples, num_train_samples) - array
            with distances between each test and each train sample
@@ -152,10 +152,11 @@ class KNN:
             # TODO: Implement choosing best class based on k
             # nearest training samples
             tmp = dists[i]
-            ind = bn.partition(tmp,self.k)[:self.k]
-
-            print(ind)
-            return
+            ind = bn.argpartition(tmp,self.k)[:self.k] # unsorted numbers of KNN in train
+            res = self.train_y[ind] # binary label of KNN
+            pred[i] = sum(res) > len(res) - sum(res)
+            #import pdb;
+            #pdb.set_trace()
         return pred
 
     def predict_labels_multiclass(self, dists):
