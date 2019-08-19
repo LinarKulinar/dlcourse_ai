@@ -1,11 +1,13 @@
 import numpy as np
 import bottleneck as bn
+from collections import Counter
 
 
 class KNN:
     """
     K-neariest-neighbor classifier using L1 loss
     """
+
     def __init__(self, k=1):
         self.k = k
 
@@ -52,16 +54,15 @@ class KNN:
         '''
         num_train = self.train_X.shape[0]
         num_test = X.shape[0]
-        num_vec = self.train_X[0].shape[0] #lenth vector of picture
+        num_vec = self.train_X[0].shape[0]  # lenth vector of picture
         dists = np.zeros((num_test, num_train), np.float32)
         for i_test in range(num_test):
             for i_train in range(num_train):
                 # TODO: Fill dists[i_test][i_train]
                 for ind in range(num_vec):
-                    dists[i_test][i_train]+=np.abs(self.train_X[i_train][ind]-X[i_test][ind])
+                    dists[i_test][i_train] += np.abs(self.train_X[i_train][ind] - X[i_test][ind])
         return dists
-    
-    
+
     def compute_distances_two_loops(self, X):
         '''
         Computes distance from every sample of X to every training sample
@@ -76,14 +77,13 @@ class KNN:
         '''
         num_train = self.train_X.shape[0]
         num_test = X.shape[0]
-        num_vec = self.train_X[0].shape[0] #lenth vector of picture
+        num_vec = self.train_X[0].shape[0]  # lenth vector of picture
         dists = np.zeros((num_test, num_train), np.float32)
         for i_test in range(num_test):
             for i_train in range(num_train):
                 # TODO: Fill dists[i_test][i_train]
-                dists[i_test][i_train]=np.sum(np.abs(self.train_X[i_train]-X[i_test]))
+                dists[i_test][i_train] = np.sum(np.abs(self.train_X[i_train] - X[i_test]))
         return dists
-            
 
     def compute_distances_one_loop(self, X):
         '''
@@ -103,7 +103,7 @@ class KNN:
         for i_test in range(num_test):
             # TODO: Fill the whole row of dists[i_test]
             # without additional loops
-            dists[i_test]=np.sum(np.abs(X[i_test]-self.train_X),axis=1)
+            dists[i_test] = np.sum(np.abs(X[i_test] - self.train_X), axis=1)
         return dists
 
     def compute_distances_no_loops(self, X):
@@ -124,14 +124,18 @@ class KNN:
         dists = np.zeros((num_test, num_train), np.float32)
         # TODO: Implement computing all distances with no loops!
 
-        A = X # first matrix
-        B = self.train_X # second matrix
-        An = np.expand_dims(A, axis=2)
-        Bn = np.expand_dims(B.T, axis=0)
-        dists = An-Bn
-        dists = np.abs(dists)
-        dists = np.sum(dists, axis=1)
+        # my bad slowly code:
+        # A = X # first matrix
+        # B = self.train_X # second matrix
+        # An = np.expand_dims(A, axis=2)
+        # Bn = np.expand_dims(B.T, axis=0)
+        # dists = An-Bn
+        # dists = np.abs(dists)
+        # dists = np.sum(dists, axis=1)
 
+        # fast code from: https://github.com/johndolgov/dlcourse_ai/blob/master/assignments/assignment1/knn.py
+        # FIXME падает с Memory Error при вызове этой функции в мультикласовой классификации
+        dists = np.sum(np.abs(np.float32(X[:, np.newaxis] - self.train_X)), axis=2)
         return dists
 
     def predict_labels_binary(self, dists):
@@ -152,11 +156,11 @@ class KNN:
             # TODO: Implement choosing best class based on k
             # nearest training samples
             tmp = dists[i]
-            ind = bn.argpartition(tmp,self.k)[:self.k] # unsorted numbers of KNN in train
-            res = self.train_y[ind] # binary label of KNN
+            ind = bn.argpartition(tmp, self.k)[:self.k]  # unsorted numbers of KNN in train
+            res = self.train_y[ind]  # binary label of KNN
             pred[i] = sum(res) > len(res) - sum(res)
-            #import pdb;
-            #pdb.set_trace()
+            # import pdb;
+            # pdb.set_trace()
         return pred
 
     def predict_labels_multiclass(self, dists):
@@ -172,10 +176,14 @@ class KNN:
            for every test sample
         '''
         num_test = dists.shape[0]
-        num_test = dists.shape[0]
         pred = np.zeros(num_test, np.int)
+
         for i in range(num_test):
             # TODO: Implement choosing best class based on k
             # nearest training samples
-            pass
+            tmp = dists[i]
+            ind = bn.argpartition(tmp, self.k)[:self.k]  # unsorted numbers of KNN in train
+            res = self.train_y[ind]  # label of KNN
+            ans_set = Counter(res)
+            pred[i] = ans_set.most_common(1)[0][0]  # one most_common in KNN
         return pred
