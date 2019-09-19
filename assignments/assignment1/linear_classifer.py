@@ -14,7 +14,23 @@ def softmax(predictions):
         probability for every class, 0..1
     '''
     # TODO implement softmax
-    raise Exception("Not implemented!")
+    probs = np.ones_like(predictions, dtype=float)
+    if np.ndim(predictions) == 2:
+        max_val = np.max(predictions, axis=1)
+        predictions_new = predictions - max_val[:, np.newaxis]
+        numerator = np.exp(predictions_new)
+        denominator = np.sum(numerator, axis=1)
+        probs = numerator / denominator[:, np.newaxis]
+        return probs
+
+    elif np.ndim(predictions) == 1:
+        max_val = np.max(predictions)
+        predictions_new = predictions - max_val
+        denominator = np.sum(np.exp(predictions_new))
+        probs = np.exp(predictions_new) / denominator
+        return probs
+    else:
+        raise Exception("dim(predictions)!=1 or 2")
 
 
 def cross_entropy_loss(probs, target_index):
@@ -31,7 +47,24 @@ def cross_entropy_loss(probs, target_index):
       loss: single value
     '''
     # TODO implement cross-entropy
-    raise Exception("Not implemented!")
+    if np.ndim(probs) == 2:
+        loss = 0
+        for ind in range(len(target_index)):
+            loss -= np.log(probs[ind, target_index[ind]])
+        return loss[0]
+    elif np.ndim(probs) == 1:
+        return -np.log(probs[target_index])
+    else:
+        raise Exception("dim(predictions)!=1 or 2")
+    # mask_target = np.zeros(probs.shape)
+    # if probs.ndim == 1:
+    #     mask_target[target_index] = 1
+    # else:
+    #     mask_target[tuple(np.arange(0, probs.shape[0])), tuple(target_index.T[0])] = 1  # индексация
+    #
+    # loss = -np.sum(mask_target * np.log(probs))
+    #
+    # return loss
 
 
 def softmax_with_cross_entropy(predictions, target_index):
@@ -50,7 +83,30 @@ def softmax_with_cross_entropy(predictions, target_index):
       dprediction, np array same shape as predictions - gradient of predictions by loss value
     '''
     # TODO implement softmax with cross-entropy
-    raise Exception("Not implemented!")
+
+    probs = np.ones_like(predictions, dtype=float)
+    if np.ndim(predictions) == 2:
+        max_val = np.max(predictions, axis=1)
+        predictions_new = predictions - max_val[:, np.newaxis]
+        numerator = np.exp(predictions_new)
+        denominator = np.sum(numerator, axis=1)
+        probs = numerator / denominator[:, np.newaxis]
+        loss = 0
+        for ind in range(len(target_index)):
+            loss -= np.log(probs[ind, target_index[ind]])
+            dprediction = probs
+            dprediction[ind, target_index[ind]] = probs[ind, target_index[ind]] - 1
+
+    elif np.ndim(predictions) == 1:
+        max_val = np.max(predictions)
+        predictions_new = predictions - max_val
+        denominator = np.sum(np.exp(predictions_new))
+        probs = np.exp(predictions_new) / denominator
+        loss = -np.log(probs[target_index])
+        dprediction = probs
+        dprediction[target_index] = probs[target_index] - 1
+    else:
+        raise Exception("dim(predictions)!=1 or 2")
 
     return loss, dprediction
 
@@ -72,7 +128,7 @@ def l2_regularization(W, reg_strength):
     raise Exception("Not implemented!")
 
     return loss, grad
-    
+
 
 def linear_softmax(X, W, target_index):
     '''
@@ -92,7 +148,7 @@ def linear_softmax(X, W, target_index):
 
     # TODO implement prediction and gradient over W
     raise Exception("Not implemented!")
-    
+
     return loss, dW
 
 
@@ -116,7 +172,7 @@ class LinearSoftmaxClassifier():
 
         num_train = X.shape[0]
         num_features = X.shape[1]
-        num_classes = np.max(y)+1
+        num_classes = np.max(y) + 1
         if self.W is None:
             self.W = 0.001 * np.random.randn(num_features, num_classes)
 
@@ -155,12 +211,3 @@ class LinearSoftmaxClassifier():
         raise Exception("Not implemented!")
 
         return y_pred
-
-
-
-                
-                                                          
-
-            
-
-                
