@@ -78,16 +78,36 @@ train_X, train_y, val_X, val_y = random_split_train_val(train_X, train_y, num_va
 # check_gradient(lambda x: linear_classifer.softmax_with_cross_entropy(x, 1), np.array([1, 0, 0], np.float))
 
 
-# TODO Extend combined function so it can receive a 2d array with batch of samples
+# # TODO Extend combined function so it can receive a 2d array with batch of samples
+#
+# # Test batch_size = 1
+# batch_size = 1
+# predictions = np.zeros((batch_size, 3))
+# target_index = np.ones(batch_size, np.int)
+# check_gradient(lambda x: linear_classifer.softmax_with_cross_entropy(x, target_index), predictions)
+#
+# # Test batch_size = 3
+# batch_size = 3
+# predictions = np.zeros((batch_size, 3))
+# target_index = np.ones(batch_size, np.int)
+# check_gradient(lambda x: linear_classifer.softmax_with_cross_entropy(x, target_index), predictions)
 
-# Test batch_size = 1
-batch_size = 1
-predictions = np.zeros((batch_size, 3))
-target_index = np.ones(batch_size, np.int)
-check_gradient(lambda x: linear_classifer.softmax_with_cross_entropy(x, target_index), predictions)
 
-# Test batch_size = 3
-batch_size = 3
-predictions = np.zeros((batch_size, 3))
-target_index = np.ones(batch_size, np.int)
-check_gradient(lambda x: linear_classifer.softmax_with_cross_entropy(x, target_index), predictions)
+# # TODO Implement linear_softmax function that uses softmax with cross-entropy for linear classifier
+batch_size = 2
+num_classes = 2
+num_features = 3
+np.random.seed(42)
+W = np.random.randint(-1, 3, size=(num_features, num_classes)).astype(np.float)
+# X = np.random.randint(-1, 3, size=(batch_size, num_features)).astype(np.float)
+# target_index = np.ones(batch_size, dtype=np.int)
+#
+# loss, dW = linear_classifer.linear_softmax(X, W, target_index)
+# # check_gradient(lambda w: linear_classifer.linear_softmax(X, w, target_index), W)
+#
+# linear_classifer.l2_regularization(W, 0.01)
+# check_gradient(lambda w: linear_classifer.l2_regularization(w, 0.01), W)
+
+
+classifier = linear_classifer.LinearSoftmaxClassifier()
+loss_history = classifier.fit(train_X, train_y, epochs=10, learning_rate=1e-3, batch_size=300, reg=1e1)
